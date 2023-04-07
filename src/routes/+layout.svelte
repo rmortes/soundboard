@@ -6,6 +6,8 @@
 	import { TypographyProvider } from '@svelteuidev/core';
 	import { Seo } from '@svelteuidev/core';
 	import FileDropzone from '../components/FileDropzone.svelte';
+	import ExportBtn from '../components/ExportBtn.svelte';
+	import ImportBtn from '../components/ImportBtn.svelte';
 
 	let openAdd = false;
 </script>
@@ -18,6 +20,8 @@
 				<div class="w-full flex flex-row items-center justify-center">
 					<span class="title">Soundboard</span>
 				</div>
+				<ExportBtn />
+				<ImportBtn />
 				<ActionIcon on:click={() => (openAdd = true)} class="mx-5">
 					<Plus size={16} />
 				</ActionIcon>

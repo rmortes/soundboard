@@ -723,6 +723,11 @@ devalue@^4.3.0:
   resolved "https://registry.yarnpkg.com/devalue/-/devalue-4.3.0.tgz#d86db8fee63a70317c2355be0d3d1b4d8f89a44e"
   integrity sha512-n94yQo4LI3w7erwf84mhRUkUJfhLoCZiLyoOZ/QFsDbcWNZePrLwbQpvZBUG2TNxwV3VjCKPxkiiQA6pe3TrTA==
 
+dexie-export-import@^4.0.7:
+  version "4.0.7"
+  resolved "https://registry.yarnpkg.com/dexie-export-import/-/dexie-export-import-4.0.7.tgz#585b5f39bcbaedd3100667f454c8951470a35a3c"
+  integrity sha512-h22soiockhhWch6edw8XL/JNfn7akPLuLf6kPQdR4uneG/P0XQus4I8wpjV86dck61oEYKPHm36jyft/zVK0jQ==
+
 dexie@^3.2.3:
   version "3.2.3"
   resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.2.3.tgz#f35c91ca797599df8e771b998e9ae9669c877f8c"
