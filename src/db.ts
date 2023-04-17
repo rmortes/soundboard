@@ -4,6 +4,7 @@ export interface IFile {
   id?: number;
   name: string;
   file: File;
+  volume: number;
 }
 
 class TestDB extends Dexie {
@@ -13,6 +14,9 @@ class TestDB extends Dexie {
     super("TestDB");
     this.version(1).stores({
       files: "++id, name, file",
+    });
+    this.version(2).stores({
+      files: "++id, name, file, volume",
     });
   }
 }

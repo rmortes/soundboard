@@ -47,12 +47,18 @@
 			console.error(error);
 		}
 	}
+
+	$: if (typeof file.volume === 'number' && audio) {
+		audio.volume = file.volume / 100;
+		db.files.update(file.id!, { volume: file.volume });
+	}
 </script>
 
 <Tile>
 	<div class="grid rounded-xl">
 		<audio controls src={URL.createObjectURL(file.file)} class="hidden" bind:this={audio} />
 		<span class="name">{file.name}</span>
+		<input type="range" min="0" max="100" bind:value={file.volume} />
 		<div class="actions">
 			{#if audio}
 				{#if playing}
