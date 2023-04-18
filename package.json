@@ -29,6 +29,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-static": "^2.0.2",
 		"@svelteuidev/composables": "^0.10.0",
 		"@svelteuidev/core": "^0.10.0",
 		"@svelteuidev/motion": "^0.10.0",
