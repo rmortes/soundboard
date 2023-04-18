@@ -7,7 +7,7 @@
 	import TalkBar from '../components/TalkBar.svelte';
 	import { ActionIcon } from '@svelteuidev/core';
 
-	$: files = liveQuery(() => {
+	let files = liveQuery(() => {
 		return browser
 			? db.files.filter((file) => file.name.toLowerCase().includes(search.toLowerCase())).toArray()
 			: [];
@@ -32,7 +32,7 @@
 <div class="grid">
 	{#if $files}
 		{#each $files as file (file.id)}
-			<AudioTile {file} />
+			<AudioTile fileId={file.id} />
 		{/each}
 	{/if}
 </div>

@@ -1,87 +1,109 @@
+<svelte:options immutable />
+
 <script lang="ts">
 	import { Play, Pause, Stop, Gear, Trash } from 'radix-icons-svelte';
 	import { filesize } from 'filesize';
 	import { ActionIcon, Modal, TextInput } from '@svelteuidev/core';
-	import { db, type IFile } from '../db';
+	import { db } from '../db';
 	import Tile from './Tile.svelte';
+	import { browser } from '$app/environment';
+	import { liveQuery } from 'dexie';
 
-	export let file: IFile;
-	let audio: HTMLAudioElement;
+	export let fileId: number | undefined;
+
+	let file = liveQuery(() => {
+		return browser && fileId ? db.files.get(fileId) : undefined;
+	});
+
+	let audio: HTMLAudioElement | undefined;
 	let playing = false;
 	let openEdit = false;
-	let p = 0;
+	let progress = 0;
+	let volume: number | undefined = undefined;
+	let audioBlobUrl: string | undefined = undefined;
+
+	$: if ($file?.volume) {
+		volume = $file.volume;
+	}
 
 	function play() {
-		audio.play();
+		audio?.play();
 		playing = true;
 	}
 
 	function pause() {
-		audio.pause();
+		audio?.pause();
 		playing = false;
 	}
 
 	function stop() {
-		audio.pause();
-		audio.currentTime = 0;
+		if (audio) {
+			audio.pause();
+			audio.currentTime = 0;
+		}
 		playing = false;
 	}
 
-	setInterval(() => {
-		if (audio) {
-			p = (audio.currentTime / audio.duration) * 100;
-			if (p >= 100) {
-				playing = false;
-			}
-		}
-	}, 1);
-
-	$: if (file.name) {
-		db.files.update(file.id!, { name: file.name });
-	}
+	$: audio?.addEventListener('timeupdate', (e) => {
+		const audio = e.target as HTMLAudioElement;
+		progress = (audio.currentTime / audio.duration) * 100;
+		playing = progress < 100 && !audio.paused;
+	});
 
 	function deleteFile() {
 		try {
-			db.files.delete(file.id!);
+			db.files.delete($file?.id!);
 		} catch (error) {
 			console.error(error);
 		}
 	}
 
-	$: if (typeof file.volume === 'number' && audio) {
-		audio.volume = file.volume / 100;
-		db.files.update(file.id!, { volume: file.volume });
+	$: if ($file?.name) {
+		db.files.update($file.id!, { name: $file.name });
+	}
+
+	$: if ($file?.file && !audioBlobUrl) {
+		audioBlobUrl = URL.createObjectURL($file.file);
+	}
+
+	$: if (typeof volume === 'number' && audio) {
+		audio.volume = volume / 100;
+		db.files.update($file?.id!, { volume });
 	}
 </script>
 
 <Tile>
 	<div class="grid rounded-xl">
-		<audio controls src={URL.createObjectURL(file.file)} class="hidden" bind:this={audio} />
-		<span class="name">{file.name}</span>
-		<input type="range" min="0" max="100" bind:value={file.volume} />
-		<div class="actions">
-			{#if audio}
-				{#if playing}
-					<ActionIcon on:click={pause}>
-						<Pause size={16} />
-					</ActionIcon>
-				{:else}
-					<ActionIcon on:click={play}>
-						<Play size={16} />
-					</ActionIcon>
+		{#if $file}
+			<audio controls src={audioBlobUrl} class="hidden" bind:this={audio} />
+			<span class="name">{$file.name}</span>
+			<input type="range" min="0" max="100" bind:value={volume} />
+			<div class="actions">
+				{#if audio}
+					{#if playing}
+						<ActionIcon on:click={pause}>
+							<Pause size={16} />
+						</ActionIcon>
+					{:else}
+						<ActionIcon on:click={play}>
+							<Play size={16} />
+						</ActionIcon>
+					{/if}
+					{#if progress > 0}
+						<ActionIcon on:click={stop}>
+							<Stop size={16} />
+						</ActionIcon>
+					{:else}
+						<ActionIcon on:click={() => (openEdit = true)}>
+							<Gear size={16} />
+						</ActionIcon>
+					{/if}
 				{/if}
-				{#if p > 0}
-					<ActionIcon on:click={stop}>
-						<Stop size={16} />
-					</ActionIcon>
-				{:else}
-					<ActionIcon on:click={() => (openEdit = true)}>
-						<Gear size={16} />
-					</ActionIcon>
-				{/if}
-			{/if}
-		</div>
-		<div class="progress-bar" style={`--w: ${p}%`} />
+			</div>
+			<div class="progress-bar" style={`--w: ${progress}%`} />
+		{:else}
+			<span class="name">Loading...</span>
+		{/if}
 	</div>
 </Tile>
 
@@ -92,12 +114,14 @@
 	closeOnEscape={true}
 	title="Add new sound"
 >
-	<TextInput placeholder="File name" class="input w-full max-w-xs" bind:value={file.name} />
-	<span class="text-sm text-gray-500">{filesize(file?.file?.size)}</span>
-	<audio controls src={URL.createObjectURL(file.file)} />
-	<ActionIcon on:click={deleteFile}>
-		<Trash size={16} />
-	</ActionIcon>
+	{#if $file}
+		<TextInput placeholder="File name" class="input w-full max-w-xs" bind:value={$file.name} />
+		<span class="text-sm text-gray-500">{filesize($file?.file?.size)}</span>
+		<audio controls src={URL.createObjectURL($file.file)} />
+		<ActionIcon on:click={deleteFile}>
+			<Trash size={16} />
+		</ActionIcon>
+	{/if}
 </Modal>
 
 <style lang="scss">
